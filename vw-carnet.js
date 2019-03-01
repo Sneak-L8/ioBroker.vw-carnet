@@ -678,7 +678,11 @@ function CarNetLogon(callback) { //retrieve Token for the respective user
         'password': adapter.config.password};
     request.post({url: myUrl, form: myFormdata, headers: myHeaders, json: true}, function(error, response, result){
         //adapter.log.info(response.statusCode);
-        switch(response.statusCode){
+    	if (error) {
+            adapter.log.error("Logon error: " + error);
+            return (false);
+    	} else {
+            switch(response.statusCode){
             case 200:
                 myConnected=true;  //connection to VW Car-Net successful established
                 myLastCarNetAnswer='200 - connection successful';
@@ -686,16 +690,17 @@ function CarNetLogon(callback) { //retrieve Token for the respective user
             case 401:
                 myConnected=false;  //connection to VW Car-Net not established
                 myLastCarNetAnswer='401 - Username or PW are incorrect';
-                adapter.log.error("Answer fom Car-Net: " + myLastCarNetAnswer + " (" + body + ")");
+                adapter.log.error("Answer fom Car-Net: " + myLastCarNetAnswer + " (" + result + ")");
                 break;
             default:
                 myConnected=false;  //connection to VW Car-Net not established
                 myLastCarNetAnswer= "" + response.statusCode + " - undefined";
-                adapter.log.error("Answer fom Car-Net: " + myLastCarNetAnswer + " (" + body + ")");
-        }
-        myAuthHeaders.Authorization = 'AudiAuth 1 ' + result.access_token;
-        myToken = result.access_token;
-        return callback(myConnected);
+                adapter.log.error("Answer fom Car-Net: " + myLastCarNetAnswer + " (" + result + ")");
+            }
+            myAuthHeaders.Authorization = 'AudiAuth 1 ' + result.access_token;
+            myToken = result.access_token;
+            return callback(myConnected);
+    	}
     });
 }
 
